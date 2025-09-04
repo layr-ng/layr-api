@@ -199,12 +199,10 @@ export default class DiagramController {
       await Diagram.findByPk(diagram_id, { attributes: ["sequence"] })
     )?.toJSON()?.sequence as any as string | null;
 
-    const previousPrompts = req.body.previous_prompts;
-
     const llmResponse = await promptWithGpt({
       existingSequence: existingDiagramSequence!,
       prompt: body.prompt,
-      previousChats: previousPrompts as any,
+      previousChats: body.history,
     });
 
     if (llmResponse.error) {
@@ -838,9 +836,8 @@ async function promptWithGpt({
   existingSequence: string;
   prompt: string;
   previousChats: {
-    prompt: string;
-    model_response: string;
-    new_sequence: string;
+    role: string;
+    content: string;
   }[];
 }) {
   const payload = {

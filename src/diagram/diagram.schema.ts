@@ -3,6 +3,7 @@ import { z } from "zod";
 export const PromptDiagramSequenceSchema = z
   .object({
     prompt: z.string(),
+    history: z.array(z.object({ role: z.string(), content: z.string() })),
   })
   .strict()
   .refine((data) => Object.keys(data).length > 0, {
@@ -50,6 +51,7 @@ export const UpdateGroupSchema = z
 
 export type UpdateDiagramBody = z.infer<typeof UpdateDiagramSchema>;
 export type UpdateGroupBody = z.infer<typeof UpdateGroupSchema>;
+
 export type IPromptDiagramSequenceSchema = z.infer<
   typeof PromptDiagramSequenceSchema
 >;
