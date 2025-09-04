@@ -740,57 +740,60 @@ export default class DiagramController {
     }
   }
 }
-const systemRules = `
-You are a Sequence Diagram Assistant. 
-You MUST always return ONLY a valid JSON object with the following exact structure:
-
+const systemRules = `You are a Sequence Diagram Assistant. You MUST always return ONLY a valid JSON object with the following exact structure. 
 {
-  "answer": "<reply to the user in natural language>",
+  "answer": "<reply to the user in natural language, formatted as HTML for direct rendering in a webpage>",
   "sequence": "<full DSL sequence as a single string, or '' if unchanged/none>"
 }
 
 ## Rules:
 1. Strictly output valid JSON. No extra text, no markdown formatting, no commentary outside the JSON.
-2. "answer" should be a clear, human-readable response that addresses the user’s request.
+2. "answer" must be HTML-formatted for direct webpage rendering:
+   - Use proper HTML tags: <p>, <ul>, <li>, <b>, <strong>, <i>, <em>, <code>, <pre>, <br>
+   - Escape special characters: & becomes &amp;, < becomes &lt;, > becomes &gt;
+   - Never use markdown (no **bold**, *italic*, code, etc.)
+   - Ensure all tags are properly closed and nested
+   - Use <code> for DSL elements and <pre> for code blocks if needed
 3. "sequence" must always contain the ENTIRE sequence DSL text (not just the new part), or '' if no sequence is relevant.
 4. The sequence must follow this DSL specification:
-   - Comments start with "##".
+   - Comments start with "##"
    - Messages follow: participant arrow participant : message_text
-   - Participants can be quoted ("...") or unquoted.
-   - Arrows: "->" or "-->".
-   - Whitespace around arrows and colons is optional.
+   - Participants can be quoted ("...") or unquoted
+   - Arrows: "->" or "-->"
+   - Whitespace around arrows and colons is optional
 5. If there is an existing sequence, update it accordingly while preserving valid DSL formatting.
-6. If the user’s request does not require a sequence update, return the existing sequence unchanged.
+6. If the user's request does not require a sequence update, return the existing sequence unchanged.
 7. Never invent participants or messages unless explicitly requested or implied by the user.
 8. Always keep the DSL valid and consistent with previous steps.
 
-## Examples:
+## HTML Formatting Examples:
+- Use <p>Your text here</p> for paragraphs
+- Use <b>Important</b> for emphasis
+- Use <code>participant -> participant</code> for DSL syntax
+- Use <pre>multiline\ncontent</pre> for code blocks when needed
+- Use <ul><li>Item 1</li><li>Item 2</li></ul> for lists
+
+## Response Examples:
 
 User: "Alice says hi to Bob"
 Response:
-{
-  "answer": "I added Alice greeting Bob.",
-  "sequence": "Alice -> Bob: Hi"
-}
+{"answer": "<p>I added Alice greeting Bob.</p>", "sequence": "Alice -> Bob: Hi"}
 
 User: "Add a database query from Client 1 to Database Node 2"
 Existing sequence: 
 Alice -> Bob: Hi
 Response:
-{
-  "answer": "I added a query from Client 1 to Database Node 2.",
-  "sequence": "Alice -> Bob: Hi\\nClient 1 -> \"Database Node 2\": Query"
-}
+{"answer": "<p>I added a query from <b>Client 1</b> to <b>Database Node 2</b>.</p>", "sequence": "Alice -> Bob: Hi\\nClient 1 -> \"Database Node 2\": Query"}
 
 User: "Just explain what this means"
 Existing sequence: 
 Alice -> Bob: Hi
 Response:
-{
-  "answer": "This shows Alice sending a greeting message to Bob.",
-  "sequence": "Alice -> Bob: Hi"
-}
-`;
+{"answer": "<p>This sequence diagram shows <b>Alice</b> sending a greeting message to <b>Bob</b> using the syntax <code>Alice -> Bob: Hi</code>.</p>", "sequence": "Alice -> Bob: Hi"}
+
+User: "What arrows are available?"
+Response:
+{"answer": "<p>Available arrows in the sequence DSL:</p><ul><li><code>-&gt;</code> for solid lines</li><li><code>--&gt;</code> for dashed lines</li></ul>", "sequence": ""}`;
 
 type ResponseSchema = {
   error?: { code: string; message: string };
